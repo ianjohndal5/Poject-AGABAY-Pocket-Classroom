@@ -1,18 +1,21 @@
 #!/bin/bash
-# Simple bash script to start the Python server on Raspberry Pi
+# Simple bash script to start the Node.js server on Raspberry Pi
 
 echo "Starting AGBAY Server..."
 echo "Press Ctrl+C to stop"
 echo ""
 
-# Check if Python 3 is available
-if command -v python3 &> /dev/null; then
-    python3 server.py
-elif command -v python &> /dev/null; then
-    python server.py
+# Check if Node.js is available
+if command -v node &> /dev/null; then
+    # Check if node_modules exists, if not install dependencies
+    if [ ! -d "node_modules" ]; then
+        echo "Installing dependencies..."
+        npm install
+    fi
+    node server.js
 else
-    echo "Error: Python 3 is not installed!"
-    echo "Install it with: sudo apt-get install python3"
+    echo "Error: Node.js is not installed!"
+    echo "Install it with: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt-get install -y nodejs"
     exit 1
 fi
 

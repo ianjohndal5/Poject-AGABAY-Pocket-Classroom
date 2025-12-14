@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Quiz - AGBAY</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .quiz-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .quiz-controls select, .quiz-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .quiz-controls select {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border: 2px solid #2980b9;
+        }
+        .quiz-controls button {
+            background: #2980b9;
+            color: white;
+            transition: background 0.3s;
+        }
+        .quiz-controls button:hover {
+            background: #1f5f8b;
+        }
+        .quiz-controls button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .question-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .question-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .question-type {
+            padding: 5px 12px;
+            background: #e8f4f8;
+            color: #2980b9;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .question-options {
+            margin-top: 15px;
+        }
+        .option {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            background: #e8f4f8;
+            border-color: #2980b9;
+        }
+        .option.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        .option input[type="radio"], .option input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .enumeration-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .enumeration-input:focus {
+            outline: none;
+            border-color: #2980b9;
+        }
+        .quiz-results {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .score-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2980b9;
+            margin: 20px 0;
+        }
+        .score-bar {
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2980b9, #1abc9c);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .loading-quiz {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #95a5a6;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .back-button:hover {
+            background: #7f8c8d;
+        }
+        .answer-feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .answer-feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .answer-feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="mobile-menu-toggle" onclick="window.location.href='index.html'" aria-label="Back">←</button>
+        <h1>📝 Take Quiz</h1>
+        <p>Test your knowledge from the documents</p>
+    </div>
+
+    <div class="quiz-container">
+        <a href="index.html" class="back-button">← Back to Home</a>
+        
+        <div class="quiz-header">
+            <h2>📚 Quiz Generator</h2>
+            <p>Generate questions based on the available PDF documents</p>
+        </div>
+
+        <div class="quiz-controls">
+            <select id="pdf-select">
+                <option value="">Select a document...</option>
+            </select>
+            <select id="question-type-select">
+                <option value="mixed">Mixed Questions</option>
+                <option value="multiple-choice">Multiple Choice Only</option>
+                <option value="enumeration">Enumeration Only</option>
+                <option value="identification">Identification Only</option>
+            </select>
+            <select id="question-count-select">
+                <option value="5">5 Questions</option>
+                <option value="10" selected>10 Questions</option>
+                <option value="15">15 Questions</option>
+                <option value="20">20 Questions</option>
+            </select>
+            <button onclick="generateQuiz()" id="generate-btn">Generate Quiz</button>
+        </div>
+
+        <div id="quiz-content">
+            <div class="loading-quiz">
+                <p>👆 Select a document and click "Generate Quiz" to start</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Make getPDFDisplayName available (from script.js)
+        function getPDFDisplayName(pdfPath) {
+            const filename = pdfPath.split('/').pop().replace('.pdf', '');
+            let displayName = filename
+                .replace(/NotesForProfessionals$/i, '')
+                .replace(/([A-Z])/g, ' $1')
+                .trim();
+            
+            if (displayName.includes('JS')) {
+                displayName = displayName.replace(/\bJS\b/, 'JavaScript');
+            }
+            if (displayName.includes('SQL')) {
+                displayName = displayName.replace(/\bSQL\b/, 'SQL');
+            }
+            if (displayName.includes('NET')) {
+                displayName = displayName.replace(/\bNET\b/, '.NET');
+            }
+            
+            return displayName || filename;
+        }
+    </script>
+    <script>
+        // Quiz-specific code
+        let currentQuiz = null;
+        let userAnswers = {};
+        let pdfIndex = {};
+
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Load PDF list on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadPDFList();
+            await indexAllPDFsForQuiz();
+        });
+
+        /**
+         * Loads the list of PDFs for selection
+         */
+        async function loadPDFList() {
+            const select = document.getElementById('pdf-select');
+            const pdfFiles = [
+                'documents/JavaScriptNotesForProfessionals.pdf',
+                'documents/PythonNotesForProfessionals.pdf',
+                'documents/JavaNotesForProfessionals.pdf',
+                'documents/CSharpNotesForProfessionals.pdf',
+                'documents/ReactJSNotesForProfessionals.pdf',
+                'documents/NodeJSNotesForProfessionals.pdf',
+                'documents/TypeScriptNotesForProfessionals.pdf',
+                'documents/SQLNotesForProfessionals.pdf',
+                'documents/MySQLNotesForProfessionals.pdf',
+                'documents/PostgreSQLNotesForProfessionals.pdf',
+                'documents/MongoDBNotesForProfessionals.pdf',
+                'documents/CSSNotesForProfessionals.pdf',
+                'documents/GitNotesForProfessionals.pdf',
+                'documents/LinuxNotesForProfessionals.pdf',
+                'documents/PowerShellNotesForProfessionals.pdf',
+                'documents/PHPNotesForProfessionals.pdf',
+                'documents/AngularJSNotesForProfessionals.pdf',
+                'documents/ReactNativeNotesForProfessionals.pdf',
+                'documents/MicrosoftSQLServerNotesForProfessionals.pdf',
+                'documents/DotNETFrameworkNotesForProfessionals.pdf',
+                'documents/AlgorithmsNotesForProfessionals.pdf'
+            ];
+
+            pdfFiles.forEach(pdfPath => {
+                const option = document.createElement('option');
+                option.value = pdfPath;
+                option.textContent = getPDFDisplayName(pdfPath);
+                select.appendChild(option);
+            });
+        }
+
+        /**
+         * Indexes all PDFs for quiz generation
+         */
+        async function indexAllPDFsForQuiz() {
+            const pdfFiles = [
+                'documents/JavaScriptNotesForProfessionals.pdf',
+                'documents/PythonNotesForProfessionals.pdf',
+                'documents/JavaNotesForProfessionals.pdf',
+                'documents/CSharpNotesForProfessionals.pdf',
+                'documents/ReactJSNotesForProfessionals.pdf',
+                'documents/NodeJSNotesForProfessionals.pdf',
+                'documents/TypeScriptNotesForProfessionals.pdf',
+                'documents/SQLNotesForProfessionals.pdf',
+                'documents/MySQLNotesForProfessionals.pdf',
+                'documents/PostgreSQLNotesForProfessionals.pdf',
+                'documents/MongoDBNotesForProfessionals.pdf',
+                'documents/CSSNotesForProfessionals.pdf',
+                'documents/GitNotesForProfessionals.pdf',
+                'documents/LinuxNotesForProfessionals.pdf',
+                'documents/PowerShellNotesForProfessionals.pdf',
+                'documents/PHPNotesForProfessionals.pdf',
+                'documents/AngularJSNotesForProfessionals.pdf',
+                'documents/ReactNativeNotesForProfessionals.pdf',
+                'documents/MicrosoftSQLServerNotesForProfessionals.pdf',
+                'documents/DotNETFrameworkNotesForProfessionals.pdf',
+                'documents/AlgorithmsNotesForProfessionals.pdf'
+            ];
+
+            for (const pdfPath of pdfFiles) {
+                try {
+                    const pdfData = await extractTextFromPDF(pdfPath);
+                    if (pdfData.text) {
+                        const pdfName = pdfPath.split('/').pop().replace('.pdf', '');
+                        pdfIndex[pdfName] = {
+                            path: pdfPath,
+                            text: pdfData.text,
+                            sentences: extractSentences(pdfData.text)
+                        };
+                    }
+                } catch (error) {
+                    console.error(`Error indexing ${pdfPath}:`, error);
+                }
+            }
+        }
+
+        /**
+         * Extracts text from PDF
+         */
+        async function extractTextFromPDF(pdfPath) {
+            try {
+                const loadingTask = pdfjsLib.getDocument(pdfPath);
+                const pdf = await loadingTask.promise;
+                let fullText = '';
+                
+                const maxPages = Math.min(pdf.numPages, 30); // Limit to 30 pages for quiz
+                
+                for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + ' ';
+                }
+                
+                return { text: fullText.trim() };
+            } catch (error) {
+                console.error(`Error extracting text from ${pdfPath}:`, error);
+                return { text: '' };
+            }
+        }
+
+        /**
+         * Extracts sentences from text
+         */
+        function extractSentences(text) {
+            // Split by sentence endings, but keep the punctuation
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+            return sentences
+                .map(s => s.trim())
+                .filter(s => s.length > 20 && s.length < 500) // Filter reasonable length sentences
+                .filter(s => !/^\d+$/.test(s)); // Remove pure numbers
+        }
+
+        /**
+         * Generates quiz questions from PDF content
+         */
+        function generateQuiz() {
+            const pdfPath = document.getElementById('pdf-select').value;
+            const questionType = document.getElementById('question-type-select').value;
+            const questionCount = parseInt(document.getElementById('question-count-select').value);
+
+            if (!pdfPath) {
+                alert('Please select a document first!');
+                return;
+            }
+
+            const pdfName = pdfPath.split('/').pop().replace('.pdf', '');
+            const pdfData = pdfIndex[pdfName];
+
+            if (!pdfData || !pdfData.sentences || pdfData.sentences.length === 0) {
+                alert('Document content not loaded yet. Please wait a moment and try again.');
+                return;
+            }
+
+            const questions = [];
+            const sentences = pdfData.sentences;
+            const usedSentences = new Set();
+
+            // Generate questions
+            for (let i = 0; i < questionCount && i < sentences.length; i++) {
+                let sentence;
+                let attempts = 0;
+                
+                // Find an unused sentence
+                do {
+                    sentence = sentences[Math.floor(Math.random() * sentences.length)];
+                    attempts++;
+                } while (usedSentences.has(sentence) && attempts < 50);
+                
+                usedSentences.add(sentence);
+
+                let question;
+                if (questionType === 'mixed') {
+                    const types = ['multiple-choice', 'enumeration', 'identification'];
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+                    question = generateQuestion(sentence, randomType, sentences, pdfData.text);
+                } else {
+                    question = generateQuestion(sentence, questionType, sentences, pdfData.text);
+                }
+
+                if (question) {
+                    questions.push(question);
+                }
+            }
+
+            currentQuiz = questions;
+            userAnswers = {};
+            displayQuiz(questions);
+        }
+
+        /**
+         * Generates a single question based on sentence and type
+         */
+        function generateQuestion(sentence, type, allSentences, fullText) {
+            const cleanSentence = sentence.replace(/[.!?]+$/, '').trim();
+            
+            if (type === 'multiple-choice') {
+                return generateMultipleChoice(cleanSentence, allSentences);
+            } else if (type === 'enumeration') {
+                return generateEnumeration(cleanSentence, fullText);
+            } else if (type === 'identification') {
+                return generateIdentification(cleanSentence);
+            }
+            return null;
+        }
+
+        /**
+         * Generates a multiple choice question
+         */
+        function generateMultipleChoice(sentence, allSentences) {
+            // Extract key term or create a fill-in-the-blank
+            const words = sentence.split(/\s+/);
+            if (words.length < 5) return null;
+
+            // Find a significant word to replace
+            const significantWords = words.filter(w => 
+                w.length > 4 && 
+                !['the', 'this', 'that', 'with', 'from', 'which', 'where', 'when', 'what'].includes(w.toLowerCase())
+            );
+
+            if (significantWords.length === 0) return null;
+
+            const wordToReplace = significantWords[Math.floor(Math.random() * significantWords.length)];
+            const blank = sentence.replace(wordToReplace, '______');
+            
+            // Generate wrong answers from other sentences
+            const wrongAnswers = [];
+            for (let i = 0; i < 3 && wrongAnswers.length < 3; i++) {
+                const randomSentence = allSentences[Math.floor(Math.random() * allSentences.length)];
+                const randomWords = randomSentence.split(/\s+/).filter(w => w.length > 3);
+                if (randomWords.length > 0) {
+                    wrongAnswers.push(randomWords[Math.floor(Math.random() * randomWords.length)]);
+                }
+            }
+
+            return {
+                type: 'multiple-choice',
+                question: blank,
+                correctAnswer: wordToReplace,
+                options: shuffleArray([wordToReplace, ...wrongAnswers].slice(0, 4))
+            };
+        }
+
+        /**
+         * Generates an enumeration question
+         */
+        function generateEnumeration(sentence, fullText) {
+            // Look for lists or numbered items in the sentence
+            const listPattern = /(?:^|\s)(\d+[\.\)]|\-|\*)\s+([^.!?]+)/gi;
+            const matches = [...sentence.matchAll(listPattern)];
+            
+            if (matches.length >= 2) {
+                const items = matches.map(m => m[2].trim()).filter(i => i.length > 3);
+                if (items.length >= 2) {
+                    return {
+                        type: 'enumeration',
+                        question: `Enumerate the following from the document: ${sentence.substring(0, 100)}...`,
+                        correctAnswers: items,
+                        expectedCount: items.length
+                    };
+                }
+            }
+
+            // Fallback: ask for key terms
+            const keyTerms = sentence.split(/\s+/)
+                .filter(w => w.length > 5 && /^[A-Z]/.test(w))
+                .slice(0, 3);
+            
+            if (keyTerms.length >= 2) {
+                return {
+                    type: 'enumeration',
+                    question: `List the key terms/concepts mentioned in: "${sentence.substring(0, 150)}..."`,
+                    correctAnswers: keyTerms,
+                    expectedCount: keyTerms.length
+                };
+            }
+
+            return null;
+        }
+
+        /**
+         * Generates an identification question
+         */
+        function generateIdentification(sentence) {
+            // Extract a definition or concept
+            const definitionPattern = /(?:is|are|refers to|means|defined as)\s+([^.!?]+)/i;
+            const match = sentence.match(definitionPattern);
+            
+            if (match) {
+                const term = sentence.substring(0, sentence.indexOf(match[0])).trim().split(/\s+/).pop();
+                const definition = match[1].trim();
+                
+                if (term && definition.length > 10) {
+                    return {
+                        type: 'identification',
+                        question: `What is: "${definition.substring(0, 200)}..."?`,
+                        correctAnswer: term
+                    };
+                }
+            }
+
+            // Fallback: ask about a key term
+            const words = sentence.split(/\s+/);
+            const keyWord = words.find(w => w.length > 5 && /^[A-Z]/.test(w));
+            
+            if (keyWord) {
+                const context = sentence.replace(keyWord, '______');
+                return {
+                    type: 'identification',
+                    question: context.substring(0, 200),
+                    correctAnswer: keyWord
+                };
+            }
+
+            return null;
+        }
+
+        /**
+         * Shuffles an array
+         */
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        /**
+         * Displays the quiz
+         */
+        function displayQuiz(questions) {
+            const content = document.getElementById('quiz-content');
+            let html = '';
+
+            questions.forEach((q, index) => {
+                html += `<div class="question-card" id="question-${index}">`;
+                html += `<div class="question-header">`;
+                html += `<span class="question-number">Question ${index + 1}</span>`;
+                html += `<span class="question-type">${q.type.toUpperCase()}</span>`;
+                html += `</div>`;
+                html += `<div class="question-text">${q.question}</div>`;
+
+                if (q.type === 'multiple-choice') {
+                    html += `<div class="question-options">`;
+                    q.options.forEach((option, optIndex) => {
+                        html += `<div class="option" onclick="selectOption(${index}, ${optIndex})">`;
+                        html += `<input type="radio" name="q${index}" value="${optIndex}" id="q${index}_opt${optIndex}">`;
+                        html += `<label for="q${index}_opt${optIndex}">${option}</label>`;
+                        html += `</div>`;
+                    });
+                    html += `</div>`;
+                } else if (q.type === 'enumeration') {
+                    html += `<textarea class="enumeration-input" id="answer-${index}" placeholder="Enter your answers (one per line or separated by commas)"></textarea>`;
+                } else if (q.type === 'identification') {
+                    html += `<input type="text" class="enumeration-input" id="answer-${index}" placeholder="Enter your answer">`;
+                }
+
+                html += `</div>`;
+            });
+
+            html += `<div style="text-align: center; margin-top: 30px;">`;
+            html += `<button onclick="submitQuiz()" style="padding: 15px 40px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;">Submit Quiz</button>`;
+            html += `</div>`;
+
+            content.innerHTML = html;
+        }
+
+        /**
+         * Handles option selection for multiple choice
+         */
+        function selectOption(questionIndex, optionIndex) {
+            const question = currentQuiz[questionIndex];
+            const option = question.options[optionIndex];
+            
+            // Unselect all options
+            document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(radio => {
+                radio.checked = false;
+                radio.closest('.option').classList.remove('selected');
+            });
+            
+            // Select this option
+            const radio = document.getElementById(`q${questionIndex}_opt${optionIndex}`);
+            radio.checked = true;
+            radio.closest('.option').classList.add('selected');
+            
+            userAnswers[questionIndex] = option;
+        }
+
+        /**
+         * Submits and grades the quiz
+         */
+        function submitQuiz() {
+            if (!currentQuiz) return;
+
+            let correct = 0;
+            let total = currentQuiz.length;
+            const results = [];
+
+            currentQuiz.forEach((question, index) => {
+                let isCorrect = false;
+                let userAnswer = '';
+
+                if (question.type === 'multiple-choice') {
+                    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                    if (selected) {
+                        const optionIndex = parseInt(selected.value);
+                        userAnswer = question.options[optionIndex];
+                        isCorrect = userAnswer === question.correctAnswer;
+                    }
+                } else if (question.type === 'enumeration') {
+                    const input = document.getElementById(`answer-${index}`);
+                    userAnswer = input.value.trim();
+                    const userAnswersList = userAnswer.split(/[,\n]/).map(a => a.trim().toLowerCase());
+                    const correctAnswersList = question.correctAnswers.map(a => a.toLowerCase());
+                    
+                    // Check if at least 50% of answers match
+                    const matches = userAnswersList.filter(ua => 
+                        correctAnswersList.some(ca => ca.includes(ua) || ua.includes(ca))
+                    );
+                    isCorrect = matches.length >= Math.ceil(correctAnswersList.length * 0.5);
+                } else if (question.type === 'identification') {
+                    const input = document.getElementById(`answer-${index}`);
+                    userAnswer = input.value.trim();
+                    const correctAnswerLower = question.correctAnswer.toLowerCase();
+                    const userAnswerLower = userAnswer.toLowerCase();
+                    isCorrect = userAnswerLower === correctAnswerLower || 
+                               correctAnswerLower.includes(userAnswerLower) ||
+                               userAnswerLower.includes(correctAnswerLower);
+                }
+
+                if (isCorrect) correct++;
+                results.push({ question, userAnswer, isCorrect });
+            });
+
+            displayResults(correct, total, results);
+        }
+
+        /**
+         * Displays quiz results
+         */
+        function displayResults(correct, total, results) {
+            const content = document.getElementById('quiz-content');
+            const percentage = Math.round((correct / total) * 100);
+            
+            let html = '<div class="quiz-results">';
+            html += `<h2>📊 Quiz Results</h2>`;
+            html += `<div class="score-display">${correct} / ${total}</div>`;
+            html += `<div class="score-bar">`;
+            html += `<div class="score-fill" style="width: ${percentage}%">${percentage}%</div>`;
+            html += `</div>`;
+
+            // Show detailed results
+            html += `<div style="margin-top: 30px; text-align: left;">`;
+            results.forEach((result, index) => {
+                html += `<div class="question-card">`;
+                html += `<div class="question-header">`;
+                html += `<span class="question-number">Question ${index + 1}</span>`;
+                html += `<span class="question-type">${result.question.type.toUpperCase()}</span>`;
+                html += `</div>`;
+                html += `<div class="question-text">${result.question.question}</div>`;
+                
+                if (result.isCorrect) {
+                    html += `<div class="answer-feedback correct">✓ Correct! Your answer: "${result.userAnswer || 'N/A'}"</div>`;
+                } else {
+                    html += `<div class="answer-feedback incorrect">✗ Incorrect. Your answer: "${result.userAnswer || 'No answer provided'}". `;
+                    if (result.question.type === 'multiple-choice') {
+                        html += `Correct answer: "${result.question.correctAnswer}"`;
+                    } else if (result.question.type === 'enumeration') {
+                        html += `Expected answers: ${result.question.correctAnswers.join(', ')}`;
+                    } else {
+                        html += `Correct answer: "${result.question.correctAnswer}"`;
+                    }
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+            html += `</div>`;
+
+            html += `<div style="margin-top: 30px;">`;
+            html += `<button onclick="location.reload()" style="padding: 12px 30px; background: #2980b9; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">Take Another Quiz</button>`;
+            html += `</div>`;
+            html += `</div>`;
+
+            content.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
+

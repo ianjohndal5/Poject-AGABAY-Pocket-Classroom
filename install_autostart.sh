@@ -29,6 +29,51 @@ fi
 echo "Installing for user: $SUDO_USER"
 echo ""
 
+# Find Node.js path
+echo "Detecting Node.js installation..."
+NODE_PATH=$(which node 2>/dev/null || echo "/usr/bin/node")
+
+# If node not found in PATH, try common locations
+if [ ! -f "$NODE_PATH" ]; then
+    if [ -f "/usr/local/bin/node" ]; then
+        NODE_PATH="/usr/local/bin/node"
+    elif [ -f "/usr/bin/nodejs" ]; then
+        NODE_PATH="/usr/bin/nodejs"
+    else
+        echo "WARNING: Node.js not found! Trying default path /usr/bin/node"
+        echo "If this fails, install Node.js first:"
+        echo "  curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -"
+        echo "  sudo apt-get install -y nodejs"
+        NODE_PATH="/usr/bin/node"
+    fi
+fi
+
+echo "Using Node.js at: $NODE_PATH"
+echo ""
+
+# Verify Node.js works
+if [ -f "$NODE_PATH" ]; then
+    NODE_VERSION=$($NODE_PATH --version 2>/dev/null || echo "unknown")
+    echo "Node.js version: $NODE_VERSION"
+else
+    echo "WARNING: Node.js executable not found at $NODE_PATH"
+    echo "The service may not start correctly. Please install Node.js first."
+fi
+echo ""
+
+# Check if npm dependencies are installed
+if [ ! -d "$CURRENT_DIR/node_modules" ]; then
+    echo "WARNING: node_modules directory not found!"
+    echo "Installing dependencies..."
+    cd "$CURRENT_DIR"
+    if command -v npm &> /dev/null; then
+        npm install
+    else
+        echo "ERROR: npm not found! Please install Node.js and npm first."
+        exit 1
+    fi
+fi
+
 # Create systemd service file
 SERVICE_FILE="/etc/systemd/system/agbay.service"
 
@@ -43,11 +88,12 @@ Wants=network-online.target
 Type=simple
 User=$SUDO_USER
 WorkingDirectory=$CURRENT_DIR
-ExecStart=/usr/bin/python3 $CURRENT_DIR/server.py
+ExecStart=$NODE_PATH $CURRENT_DIR/server.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target
@@ -71,7 +117,33 @@ echo "=========================================="
 echo ""
 echo "The AGBAY server will now start automatically on boot."
 echo ""
-echo "Useful commands:"
+
+# Try to start the service immediately
+echo "Starting AGBAY service now..."
+if systemctl start agbay.service; then
+    sleep 2
+    if systemctl is-active --quiet agbay.service; then
+        echo "✓ Service started successfully!"
+        echo ""
+        IP_ADDRESS=$(hostname -I | awk '{print $1}' 2>/dev/null || echo "localhost")
+        echo "Server is running at:"
+        echo "  http://localhost:3000"
+        if [ "$IP_ADDRESS" != "localhost" ]; then
+            echo "  http://$IP_ADDRESS:3000"
+        fi
+    else
+        echo "⚠ Service may have failed to start."
+        echo "Check status with: sudo systemctl status agbay"
+    fi
+else
+    echo "⚠ Could not start service automatically."
+    echo "Start it manually with: sudo systemctl start agbay"
+fi
+
+echo ""
+echo "=========================================="
+echo "Useful Commands:"
+echo "=========================================="
 echo "  Start service now:     sudo systemctl start agbay"
 echo "  Stop service:          sudo systemctl stop agbay"
 echo "  Restart service:       sudo systemctl restart agbay"
@@ -79,10 +151,6 @@ echo "  Check status:          sudo systemctl status agbay"
 echo "  View logs:             sudo journalctl -u agbay -f"
 echo "  Disable auto-start:    sudo systemctl disable agbay"
 echo ""
-echo "To test, you can start it now with:"
-echo "  sudo systemctl start agbay"
-echo ""
-echo "Then check status with:"
-echo "  sudo systemctl status agbay"
+echo "The server will automatically start on every boot."
 echo ""
 

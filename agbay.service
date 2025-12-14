@@ -7,11 +7,12 @@ Wants=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/Agabay
-ExecStart=/usr/bin/python3 /home/pi/Agabay/server.py
+ExecStart=/usr/bin/node /home/pi/Agabay/server.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target

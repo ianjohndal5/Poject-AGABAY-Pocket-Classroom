@@ -266,6 +266,91 @@ body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
     }
 }
 
+/* File Viewer Modal */
+.file-viewer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.file-viewer-container {
+    background: white;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 95vw;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.file-viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 2px solid #ecf0f1;
+    background: #2c3e50;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.file-viewer-header h3 {
+    margin: 0;
+    font-size: 18px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.close-viewer {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    transition: background 0.3s;
+}
+
+.close-viewer:hover {
+    background: #c0392b;
+}
+
+.file-viewer-content {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+@media screen and (max-width: 768px) {
+    .file-viewer-container {
+        max-width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .file-viewer-header {
+        border-radius: 0;
+    }
+}
+
 /* Classroom responsive styles */
 @media screen and (max-width: 768px) {
     .classroom-header {

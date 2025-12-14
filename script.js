@@ -560,6 +560,266 @@ async function fetchClassroomFiles() {
     return [];
 }
 
+// Store current file info for use in helper functions
+let currentViewerFile = { url: '', name: '' };
+
+/**
+ * Opens a file in the browser viewer (no download)
+ */
+function openFileViewer(fileUrl, fileName, fileExtension) {
+    const ext = fileExtension.toLowerCase();
+    
+    // Store file info for helper functions
+    currentViewerFile = { url: fileUrl, name: fileName };
+    
+    // Create a modal viewer
+    const modal = document.createElement('div');
+    modal.className = 'file-viewer-modal';
+    modal.innerHTML = `
+        <div class="file-viewer-container">
+            <div class="file-viewer-header">
+                <h3>${fileName}</h3>
+                <button class="close-viewer" onclick="closeFileViewer()">✕</button>
+            </div>
+            <div class="file-viewer-content" id="file-viewer-content">
+                <p>Loading file...</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    const contentDiv = document.getElementById('file-viewer-content');
+    
+    // Handle different file types
+    if (ext === '.pdf') {
+        // PDF viewer using iframe
+        contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+    } else if (ext === '.pptx' || ext === '.ppt') {
+        // PowerPoint viewer - use iframe with embedded viewer
+        // Try to use Google Docs Viewer or Office Online, with fallback
+        const encodedUrl = encodeURIComponent(fileUrl);
+        const isLocalhost = fileUrl.includes('localhost') || fileUrl.includes('127.0.0.1');
+        
+        // Get the actual IP address if available
+        const hostname = window.location.hostname;
+        let networkUrl = fileUrl;
+        if (isLocalhost && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+            networkUrl = fileUrl.replace(/localhost|127\.0\.0\.1/, hostname);
+        }
+        
+        contentDiv.innerHTML = `
+            <div style="height: 100%; display: flex; flex-direction: column;">
+                <div style="flex: 1; position: relative; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; background: #f8f9fa;">
+                    <iframe id="ppt-viewer" 
+                            src="https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(networkUrl)}" 
+                            style="width: 100%; height: 100%; border: none;" 
+                            frameborder="0"
+                            allowfullscreen>
+                    </iframe>
+                    <div id="ppt-fallback" style="display: none; text-align: center; padding: 40px; height: 100%; position: absolute; top: 0; left: 0; right: 0; background: white;">
+                        <p style="font-size: 48px; margin-bottom: 20px;">📊</p>
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">PowerPoint Presentation</h3>
+                        <p style="color: #7f8c8d; margin-bottom: 25px; line-height: 1.6;">
+                            The online viewer requires the file to be accessible from the internet.<br>
+                            For local files, please download and open with PowerPoint, LibreOffice, or Google Slides.
+                        </p>
+                        <button id="ppt-download-btn" style="display: inline-block; padding: 12px 24px; background: #2980b9; color: white; border: none; border-radius: 5px; font-size: 16px; margin: 5px; cursor: pointer;">
+                            📥 Download Presentation
+                        </button>
+                        <button id="ppt-google-btn" style="display: inline-block; padding: 12px 24px; background: #1abc9c; color: white; border: none; border-radius: 5px; font-size: 16px; margin: 5px; cursor: pointer;">
+                            🌐 Try Google Viewer
+                        </button>
+                    </div>
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #7f8c8d; font-size: 12px;">💡 If the viewer doesn't load, use the download option</span>
+                    <button id="ppt-download-btn-footer" style="padding: 8px 15px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                        📥 Download
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Set up event handlers
+        setTimeout(() => {
+            const downloadBtn = document.getElementById('ppt-download-btn');
+            const downloadBtnFooter = document.getElementById('ppt-download-btn-footer');
+            const googleBtn = document.getElementById('ppt-google-btn');
+            const iframe = document.getElementById('ppt-viewer');
+            const fallback = document.getElementById('ppt-fallback');
+            
+            if (downloadBtn) {
+                downloadBtn.onclick = () => downloadPPTX(fileUrl, fileName);
+            }
+            if (downloadBtnFooter) {
+                downloadBtnFooter.onclick = () => downloadPPTX(fileUrl, fileName);
+            }
+            if (googleBtn) {
+                googleBtn.onclick = () => tryGoogleViewer(fileUrl);
+            }
+            
+            // Check if iframe loaded successfully after a delay
+            if (iframe) {
+                setTimeout(() => {
+                    // If still loading or error, show fallback after 5 seconds
+                    if (isLocalhost) {
+                        setTimeout(() => {
+                            if (fallback && iframe) {
+                                fallback.style.display = 'block';
+                                iframe.style.display = 'none';
+                            }
+                        }, 5000);
+                    }
+                }, 2000);
+            }
+        }, 100);
+    } else if (ext === '.docx' || ext === '.doc') {
+        // Word document viewer
+        const encodedUrl = encodeURIComponent(fileUrl);
+        const isLocalhost = fileUrl.includes('localhost') || fileUrl.includes('127.0.0.1') || !fileUrl.startsWith('http');
+        
+        if (isLocalhost) {
+            contentDiv.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <p style="font-size: 48px; margin-bottom: 20px;">📝</p>
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">Word Document</h3>
+                    <p style="color: #7f8c8d; margin-bottom: 25px;">
+                        Download the file to view it with Microsoft Word, LibreOffice, or Google Docs
+                    </p>
+                    <a href="${fileUrl}" download="${fileName}" style="display: inline-block; padding: 12px 24px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                        📥 Download Document
+                    </a>
+                </div>
+            `;
+        } else {
+            contentDiv.innerHTML = `
+                <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" 
+                        style="width: 100%; height: calc(100% - 60px); border: none;" 
+                        frameborder="0">
+                </iframe>
+                <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #ddd;">
+                    <a href="${fileUrl}" download="${fileName}" style="display: inline-block; padding: 8px 15px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px;">
+                        📥 Download
+                    </a>
+                </div>
+            `;
+        }
+    } else if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+        // Image viewer
+        contentDiv.innerHTML = `<img src="${fileUrl}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" alt="${fileName}">`;
+    } else if (['.mp4', '.webm', '.ogg'].includes(ext)) {
+        // Video viewer
+        contentDiv.innerHTML = `
+            <video controls style="width: 100%; max-height: 80vh;">
+                <source src="${fileUrl}" type="video/${ext.substring(1)}">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    } else if (ext === '.txt' || ext === '.md') {
+        // Text file viewer
+        fetch(fileUrl)
+            .then(response => response.text())
+            .then(text => {
+                contentDiv.innerHTML = `<pre style="white-space: pre-wrap; word-wrap: break-word; padding: 20px; background: #f8f9fa; border-radius: 5px;">${text}</pre>`;
+            })
+            .catch(err => {
+                contentDiv.innerHTML = `<p>Error loading file: ${err.message}</p>`;
+            });
+    } else {
+        // Generic file - offer download
+        contentDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <p style="font-size: 48px; margin-bottom: 20px;">📄</p>
+                <p>This file type cannot be previewed in the browser.</p>
+                <a href="${fileUrl}" download="${fileName}" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    📥 Download File
+                </a>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Closes the file viewer modal
+ */
+function closeFileViewer() {
+    const modal = document.querySelector('.file-viewer-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Downloads a PPTX file
+ */
+function downloadPPTX(fileUrl, fileName) {
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/**
+ * Tries Google Docs viewer for PPTX
+ */
+function tryGoogleViewer(fileUrl) {
+    const contentDiv = document.getElementById('file-viewer-content');
+    const encodedUrl = encodeURIComponent(fileUrl);
+    const fileName = currentViewerFile.name || 'presentation';
+    contentDiv.innerHTML = `
+        <div style="height: 100%; display: flex; flex-direction: column;">
+            <iframe src="https://docs.google.com/viewer?url=${encodedUrl}&embedded=true" 
+                    style="width: 100%; height: calc(100% - 60px); border: none;" 
+                    frameborder="0">
+            </iframe>
+            <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #ddd;">
+                <button onclick="downloadPPTX('${fileUrl}', '${fileName}')" style="padding: 8px 15px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    📥 Download
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Tries to open Office Online viewer (for network-accessible files)
+ */
+function tryOfficeViewer(fileUrl) {
+    const encodedUrl = encodeURIComponent(fileUrl);
+    const contentDiv = document.getElementById('file-viewer-content');
+    contentDiv.innerHTML = `
+        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" 
+                style="width: 100%; height: calc(100% - 60px); border: none;" 
+                frameborder="0">
+        </iframe>
+        <div style="padding: 10px; background: #fff3cd; border-top: 1px solid #ddd; border-radius: 0 0 5px 5px;">
+            <p style="margin: 0; color: #856404; font-size: 12px;">
+                ⚠️ Office Online requires the file to be accessible from the internet. 
+                If this doesn't work, please download the file instead.
+            </p>
+        </div>
+    `;
+}
+
+/**
+ * Handles viewer errors
+ */
+function handleViewerError() {
+    const contentDiv = document.getElementById('file-viewer-content');
+    if (contentDiv) {
+        contentDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <p style="font-size: 48px; margin-bottom: 20px;">⚠️</p>
+                <p style="color: #7f8c8d; margin-bottom: 25px;">
+                    The online viewer couldn't load this file. Please download it to view.
+                </p>
+            </div>
+        `;
+    }
+}
+
 /**
  * Displays classroom files
  */
@@ -594,11 +854,10 @@ function displayClassroomFiles(files) {
                     <p class="material-meta">${formatFileSize(file.size)} • 👁️ ${file.views} views</p>
                 </div>
                 <div class="material-actions">
-                    <a href="${SERVER_URL}${file.url}" target="_blank" 
-                       onclick="trackFileView('${file.name.replace(/'/g, "\\'")}')" 
-                       class="view-button">
+                    <button onclick="event.preventDefault(); openFileViewer('${SERVER_URL}${file.url}', '${file.name.replace(/'/g, "\\'")}', '${file.extension}'); trackFileView('${file.name.replace(/'/g, "\\'")}')" 
+                            class="view-button" style="border: none; cursor: pointer; width: 100%;">
                         📖 View
-                    </a>
+                    </button>
                 </div>
             </div>
         `;
