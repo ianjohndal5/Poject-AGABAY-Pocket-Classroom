@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project AGBAY - Offline Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <h1>AGBAY: Pocket Classroom</h1>
+        <p>Offline Learning Gateway</p>
+    </div>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="modules-container">
+                <div class="modules-header" onclick="toggleModules()">
+                    <h3>📚 Modules</h3>
+                    <span id="modules-arrow">▼</span>
+                </div>
+                <div id="pdf-dropdown" class="pdf-dropdown">
+                    <!-- PDF buttons will be generated automatically here -->
+                </div>
+            </div>
+            <button onclick="window.location.href='quiz.html'">Take Quiz</button>
+            <button onclick="showClassroom()">🏫 Classroom</button>
+            <div class="viewer-count">
+                <span id="viewer-count-text">👥 Viewers: <span id="viewer-number">-</span></span>
+            </div>
+            <div class="status">📶 Offline Mode</div>
+        </div>
+
+        <div class="content-area">
+            <!-- Classroom Section -->
+            <div id="classroom-view" class="classroom-section" style="display: none;">
+                <div class="classroom-header">
+                    <h2>🏫 Live Classroom</h2>
+                    <div class="classroom-stats">
+                        <span class="live-indicator">🔴 LIVE</span>
+                        <span id="classroom-viewers">👥 <span id="classroom-viewer-count">0</span> viewers</span>
+                    </div>
+                </div>
+                <div class="classroom-content">
+                    <div class="teacher-panel" id="teacher-panel" style="display: none;">
+                        <h3>👨‍🏫 Teacher Panel</h3>
+                        <div class="upload-section">
+                            <input type="file" id="classroom-upload" accept=".pdf,.pptx,.ppt" multiple>
+                            <button onclick="uploadClassroomFile()">📤 Upload Material</button>
+                        </div>
+                        <div id="uploaded-materials" class="uploaded-materials"></div>
+                    </div>
+                    <div class="student-view" id="student-view">
+                        <h3>📱 Student View</h3>
+                        <div id="classroom-materials" class="classroom-materials">
+                            <p>Waiting for teacher to share materials...</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="close-classroom" onclick="hideClassroom()">← Back to Lessons</button>
+            </div>
+
+            <div id="lesson-view">
+                <h2>Welcome, Student!</h2>
+                <p>Select a subject on the left to begin your lesson.</p>
+            </div>
+
+            <div id="chat-container" class="chat-container">
+                <div class="chat-header">💬 AGBAY Assistant</div>
+                <div id="chat-box" class="chat-box">
+                    <p><strong>Bot:</strong> Loading PDF knowledge base... Please wait.</p>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="user-msg" placeholder="Ask a question..." onkeypress="if(event.key === 'Enter') askBot()">
+                    <button onclick="askBot()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

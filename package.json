@@ -1,0 +1,19 @@
+{
+  "name": "agbay-server",
+  "version": "1.0.0",
+  "description": "AGBAY Pocket Classroom - Local server for viewer tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "education",
+    "classroom",
+    "pdf",
+    "viewer-tracking"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

@@ -1,0 +1,303 @@
+body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
+.header { background: #2c3e50; color: white; text-align: center; padding: 5px; position: relative; }
+.mobile-menu-toggle { display: none; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: #1abc9c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 20px; }
+.main-layout { display: flex; height: 90vh; }
+
+.sidebar { width: 200px; background: #34495e; padding: 20px; color: white; }
+.sidebar button { width: 100%; padding: 10px; margin-bottom: 10px; cursor: pointer; border: none; background: #1abc9c; color: white; border-radius: 5px; }
+
+.modules-container { margin-bottom: 20px; }
+.modules-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px; background: #2c3e50; border-radius: 5px; margin-bottom: 5px; }
+.modules-header:hover { background: #1a252f; }
+.modules-header h3 { margin: 0; font-size: 16px; }
+#modules-arrow { transition: transform 0.3s; font-size: 12px; }
+.modules-header.collapsed #modules-arrow { transform: rotate(-90deg); }
+
+.pdf-dropdown { max-height: 400px; overflow-y: auto; display: none; }
+.pdf-dropdown.show { display: block; }
+.pdf-dropdown button { width: 100%; padding: 8px; margin-bottom: 5px; cursor: pointer; border: none; background: #16a085; color: white; border-radius: 3px; text-align: left; font-size: 13px; }
+.pdf-dropdown button:hover { background: #138d75; }
+
+.content-area { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+#lesson-view { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-y: auto; }
+.lesson-header { border-bottom: 2px solid #2980b9; padding-bottom: 15px; margin-bottom: 20px; }
+.lesson-header h2 { margin: 0 0 10px 0; color: #2c3e50; font-size: 24px; }
+.page-info { margin: 0; color: #7f8c8d; font-size: 14px; }
+.lesson-content { line-height: 1.8; color: #34495e; }
+.lesson-content p { margin: 15px 0; text-align: justify; }
+.lesson-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1; text-align: center; }
+.source-link { display: inline-block; padding: 10px 20px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s; }
+.source-link:hover { background: #1f5f8b; }
+
+.chat-container { height: 350px; background: white; margin-top: 20px; border-radius: 10px; display: flex; flex-direction: column; border: 1px solid #ddd; }
+#chat-container { display: flex; }
+.chat-header { background: #2980b9; color: white; padding: 10px; border-radius: 10px 10px 0 0; }
+.chat-box { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
+.chat-box a { color: #2980b9; text-decoration: underline; cursor: pointer; }
+.chat-box a:hover { color: #1f5f8b; }
+.chat-input { display: flex; padding: 10px; border-top: 1px solid #ddd; }
+.chat-input input { flex: 1; padding: 5px; }
+.status { margin-top: 50px; font-size: 12px; color: #bdc3c7; }
+.viewer-count { margin-top: 20px; padding: 10px; background: #2c3e50; border-radius: 5px; text-align: center; font-size: 14px; }
+.viewer-count span { color: #1abc9c; }
+.loading-percent { color: #1abc9c; font-weight: bold; }
+
+/* Classroom Styles */
+.classroom-section { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+.classroom-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2980b9; padding-bottom: 15px; margin-bottom: 20px; }
+.classroom-header h2 { margin: 0; color: #2c3e50; }
+.classroom-stats { display: flex; gap: 20px; align-items: center; }
+.live-indicator { color: #e74c3c; font-weight: bold; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.classroom-content { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.teacher-panel, .student-view { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+.teacher-panel h3, .student-view h3 { margin-top: 0; color: #2c3e50; }
+.upload-section { display: flex; gap: 10px; margin-bottom: 20px; }
+.upload-section input[type="file"] { flex: 1; padding: 8px; }
+.upload-section button { padding: 8px 15px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer; }
+.upload-section button:hover { background: #1f5f8b; }
+.uploaded-materials { display: flex; flex-direction: column; gap: 10px; }
+.material-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 5px; }
+.material-item button { padding: 5px 10px; background: #1abc9c; color: white; border: none; border-radius: 3px; cursor: pointer; }
+.material-item button:hover { background: #16a085; }
+.classroom-materials { min-height: 200px; }
+.materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+.material-card { background: white; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.material-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.material-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+.material-info { flex: 1; }
+.material-info h4 { margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; word-break: break-word; }
+.material-meta { margin: 0; color: #7f8c8d; font-size: 12px; }
+.material-actions { margin-top: 10px; }
+.view-button { display: block; text-align: center; padding: 8px 15px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s; }
+.view-button:hover { background: #1f5f8b; }
+.shared-material { padding: 15px; background: white; border-radius: 5px; margin-bottom: 10px; }
+.shared-material h4 { margin: 0 0 10px 0; color: #2c3e50; }
+.shared-material a { display: inline-block; padding: 8px 15px; background: #2980b9; color: white; text-decoration: none; border-radius: 5px; }
+.shared-material a:hover { background: #1f5f8b; }
+.close-classroom { margin-top: 20px; padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+.close-classroom:hover { background: #7f8c8d; }
+
+/* Scrollbar styling for dropdown */
+.pdf-dropdown::-webkit-scrollbar { width: 6px; }
+.pdf-dropdown::-webkit-scrollbar-track { background: #2c3e50; border-radius: 3px; }
+.pdf-dropdown::-webkit-scrollbar-thumb { background: #1abc9c; border-radius: 3px; }
+.pdf-dropdown::-webkit-scrollbar-thumb:hover { background: #16a085; }
+
+/* Responsive Design */
+/* Tablet styles (768px and below) */
+@media screen and (max-width: 768px) {
+    .mobile-menu-toggle { 
+        display: block; 
+    }
+    
+    .header { 
+        text-align: center; 
+        padding-left: 50px; 
+        padding-right: 50px;
+    }
+    
+    .main-layout { 
+        flex-direction: column; 
+        height: auto;
+        min-height: 90vh;
+    }
+    
+    .sidebar { 
+        width: 100%; 
+        padding: 15px;
+        order: 2;
+        display: none;
+    }
+    
+    .sidebar.mobile-open { 
+        display: block; 
+    }
+    
+    .content-area { 
+        padding: 15px;
+        order: 1;
+    }
+    
+    .chat-container { 
+        height: 350px; 
+        margin-top: 15px;
+    }
+    
+    .pdf-dropdown { 
+        max-height: 250px; 
+    }
+    
+    .status { 
+        margin-top: 20px; 
+    }
+    
+    .header h1 { 
+        font-size: 20px; 
+    }
+    
+    .header p { 
+        font-size: 14px; 
+    }
+}
+
+/* Mobile styles (480px and below) */
+@media screen and (max-width: 480px) {
+    .header { 
+        padding: 10px 5px 10px 45px; 
+    }
+    
+    .mobile-menu-toggle { 
+        left: 5px; 
+        padding: 6px 10px; 
+        font-size: 18px;
+    }
+    
+    .header h1 { 
+        font-size: 18px; 
+        margin: 5px 0;
+    }
+    
+    .header p { 
+        font-size: 12px; 
+        margin: 5px 0;
+    }
+    
+    .main-layout { 
+        min-height: 100vh;
+    }
+    
+    .sidebar { 
+        padding: 10px; 
+    }
+    
+    .sidebar button { 
+        padding: 8px; 
+        font-size: 14px;
+    }
+    
+    .modules-header h3 { 
+        font-size: 14px; 
+    }
+    
+    .content-area { 
+        padding: 10px; 
+    }
+    
+    #lesson-view { 
+        padding: 15px; 
+    }
+    
+    .chat-container { 
+        height: 300px; 
+        margin-top: 10px;
+    }
+    
+    .chat-header { 
+        padding: 8px; 
+        font-size: 14px;
+    }
+    
+    .chat-box { 
+        padding: 8px; 
+        font-size: 13px; 
+    }
+    
+    .chat-input { 
+        padding: 8px; 
+    }
+    
+    .chat-input input { 
+        padding: 8px; 
+        font-size: 14px;
+    }
+    
+    .chat-input button { 
+        padding: 8px 15px; 
+        font-size: 14px;
+    }
+    
+    .pdf-dropdown { 
+        max-height: 200px; 
+    }
+    
+    .pdf-dropdown button { 
+        padding: 6px; 
+        font-size: 12px; 
+    }
+    
+    .status { 
+        margin-top: 15px; 
+        font-size: 11px; 
+    }
+}
+
+/* Small mobile styles (360px and below) */
+@media screen and (max-width: 360px) {
+    .header h1 { 
+        font-size: 16px; 
+    }
+    
+    .chat-container { 
+        height: 250px; 
+    }
+    
+    .chat-box { 
+        font-size: 12px; 
+    }
+    
+    .pdf-dropdown button { 
+        font-size: 11px; 
+    }
+}
+
+/* Landscape mobile orientation */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .main-layout { 
+        height: auto;
+    }
+    
+    .chat-container { 
+        height: 200px; 
+    }
+    
+    .pdf-dropdown { 
+        max-height: 150px; 
+    }
+}
+
+/* Classroom responsive styles */
+@media screen and (max-width: 768px) {
+    .classroom-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .classroom-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .upload-section {
+        flex-direction: column;
+    }
+    
+    .material-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .materials-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .material-card {
+        padding: 12px;
+    }
+    
+    .material-icon {
+        font-size: 36px;
+    }
+}
